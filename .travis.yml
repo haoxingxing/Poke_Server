@@ -1,0 +1,16 @@
+language: java
+script: ant jar
+before_deploy:
+- git config --global user.email "builds@travis-ci.com"
+- git config --global user.name "Travis CI"
+deploy:
+  provider: releases
+  api_key:
+    secure: $TAGPERM
+  file: "out/Poke_Server.jar"
+  skip_cleanup: true
+  on:
+    tags: true
+    branches:
+    only:
+    - master
