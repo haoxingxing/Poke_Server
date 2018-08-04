@@ -1,0 +1,26 @@
+<project default="jar" name="build">
+  <property name="src.dir" value="src" />
+  <property name="classes.dir" value="bin" />
+  <property name="output.dir" value="out" />
+  <property name="jarname" value="Poke_Server.jar" />
+  <!-- 1. 初始化工作，如创建目录等 -->
+  <target name="init">
+    <mkdir dir="${classes.dir}" />
+    <mkdir dir="${output.dir}" />
+  </target>
+  <!-- 2. 编译 -->
+  <target name="compile" depends="init">
+    <javac srcdir="${src.dir}" destdir="${classes.dir}"
+           includeantruntime="on">
+      <compilerarg line="-encoding UTF-8" />
+    </javac>
+  </target>
+  <target name="jar" depends="compile">
+    <!-- jar文件的输出路径 -->
+    <jar destfile="${output.dir}/${jarname}" basedir="${classes.dir}">
+      <manifest>
+        <attribute name="Main-Class" value="launch"/>
+      </manifest>
+    </jar>
+  </target>
+</project>
