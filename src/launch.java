@@ -1,6 +1,10 @@
+import java.io.File;
+
 public class launch {
     public static void main(String[] args) {
-        System.out.println("Hello World");
-
+        //------------------------<INIT>---------------------------
+        File userdir = new File("data/users");
+        userdir.mkdirs();
+        //-----------------------</INIT>---------------------------
     }
 }
