@@ -1,3 +1,5 @@
+import process.aes;
+
 import java.io.File;
 
 public class launch {
@@ -6,5 +8,9 @@ public class launch {
         File userdir = new File("data/users");
         userdir.mkdirs();
         //-----------------------</INIT>---------------------------
+        String mi = aes.encrypt("233", "qwq");
+        System.out.println(mi);
+        String de = aes.decrypt(mi, "qwqd");
+        System.out.println(de);
     }
 }
