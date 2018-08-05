@@ -8,6 +8,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 public class aes {
+    static final String mode = "AES/ECB/PKCS5Padding";
     /**
      * AES加密字符串
      *
@@ -24,7 +25,7 @@ public class aes {
             SecretKey secretKey = kgen.generateKey();
             byte[] enCodeFormat = secretKey.getEncoded();
             SecretKeySpec key = new SecretKeySpec(enCodeFormat, "AES");
-            Cipher cipher = Cipher.getInstance("AES");
+            Cipher cipher = Cipher.getInstance(mode);
             byte[] byteContent = content.getBytes(StandardCharsets.UTF_8);
             cipher.init(Cipher.ENCRYPT_MODE, key);
             byte[] result = cipher.doFinal(byteContent);
@@ -52,7 +53,7 @@ public class aes {
             SecretKey secretKey = kgen.generateKey();// 根据用户密码，生成一个密钥
             byte[] enCodeFormat = secretKey.getEncoded();// 返回基本编码格式的密钥
             SecretKeySpec key = new SecretKeySpec(enCodeFormat, "AES");// 转换为AES专用密钥
-            Cipher cipher = Cipher.getInstance("AES");// 创建密码器
+            Cipher cipher = Cipher.getInstance(mode);// 创建密码器
             cipher.init(Cipher.DECRYPT_MODE, key);// 初始化为解密模式的密码器
             assert content != null;
             byte[] result = cipher.doFinal(content);

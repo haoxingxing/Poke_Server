@@ -3,6 +3,7 @@ package network;
 import process.log;
 import process.user;
 
+import java.io.IOException;
 import java.net.Socket;
 public class server extends Thread {
     private Socket socket;
@@ -17,8 +18,13 @@ public class server extends Thread {
 
     public void run() {
         user user = new user(socket);
-
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         log.printf("CLOSED CONNECTION:[" + socket.getRemoteSocketAddress().toString() + "]");
+        this.interrupt();
     }
     public void start() {
         if (t == null) {
