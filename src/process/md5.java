@@ -2,8 +2,8 @@ package process;
 
 import java.security.MessageDigest;
 
-class md5 {
-    static String md5_encode(String key) {
+public class md5 {
+    public static String md5_encode(String key) {
         char hexDigits[] = {
                 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
         };
