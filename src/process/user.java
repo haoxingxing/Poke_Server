@@ -1,10 +1,12 @@
 package process;
 
+import dataprocess.dom4j;
+import dataprocess.json;
 import network.network;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import xml.dom4j;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,48 +22,43 @@ public class user {
         this.socket = socket;
     }
 
-    public void process(Document doc) throws IOException {
-        if (doc.getRootElement().element("func").getText().equals("login")) {
-            if (this.login(doc.getRootElement().element("parameter").element("username").getText(), doc.getRootElement().element("parameter").element("password").getText())) {
-                Element r = DocumentHelper.createElement("parameter");
-                r.addElement("token").setText(this.getToken());
-                new network(socket).send(dom4j.xmltostring(dom4j.retaesprocess(dom4j.retxmlmodel("200", "Successful Logged", "user", "login", r), "NULL"), dom4j.makeOF()));
-            } else {
-                Element r = DocumentHelper.createElement("parameter");
-                r.addElement("token").setText(this.getToken());
-                new network(socket).send(dom4j.xmltostring(dom4j.retaesprocess(dom4j.retxmlmodel("405", "Username or Password Error", "user", "login", r), this.getToken()), dom4j.makeOF()));
-            }
-        }
-        if (doc.getRootElement().element("func").getText().equals("register")) {
-            if (this.register(doc.getRootElement().element("parameter").element("username").getText(), doc.getRootElement().element("parameter").element("password").getText())) {
-                Element r = DocumentHelper.createElement("parameter");
-                r.addElement("token").setText(this.getToken());
-                new network(socket).send(dom4j.xmltostring(dom4j.retaesprocess(dom4j.retxmlmodel("200", "Successful Registered", "user", "register", r), "NULL"), dom4j.makeOF()));
-            } else {
-                Element r = DocumentHelper.createElement("parameter");
-                r.addElement("token").setText(this.getToken());
-                new network(socket).send(dom4j.xmltostring(dom4j.retaesprocess(dom4j.retxmlmodel("405", "Username Repeated", "user", "register", r), this.getToken()), dom4j.makeOF()));
-            }
-        }
-        if (doc.getRootElement().element("func").getText().equals("tokenlogin")) {
-            if (this.loginwithtoken(doc.getRootElement().element("parameter").element("username").getText(), doc.getRootElement().element("parameter").element("token").getText())) {
-                Element r = DocumentHelper.createElement("parameter");
-                r.addElement("token").setText(this.getToken());
-                new network(socket).send(dom4j.xmltostring(dom4j.retxmlmodel("200", "Successful Logged", "user", "loginwithtoken", r), dom4j.makeOF()));
-            } else {
-                Element r = DocumentHelper.createElement("parameter");
-                r.addElement("token").setText(this.getToken());
-                new network(socket).send(dom4j.xmltostring(dom4j.retxmlmodel("405", "Username or Token Error", "user", "loginwithtoken", r), dom4j.makeOF()));
-            }
+    public void process(JSONObject doc) throws IOException {
+        switch (doc.getString("func")) {
+            case "login":
+                if (this.login(doc.getJSONObject("parameter").getString("username"), doc.getJSONObject("parameter").getString("password"))) {
+                    new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func", "parammeter"}, new String[]{"200", "Successful Logged", "user", "login", json.makejson(new String[]{"token"}, new String[]{this.getToken()}).toString()}), "NULL").toString());
+                } else {
+                    new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func", "parammeter"}, new String[]{"405", "Username or Password Error", "user", "login", json.makejson(new String[]{"token"}, new String[]{this.getToken()}).toString()}), this.getToken()).toString());
+                }
+                break;
+            case "register":
+                if (this.register(doc.getJSONObject("parameter").getString("username"), doc.getJSONObject("parameter").getString("password"))) {
+                    new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func", "parammeter"}, new String[]{"200", "Successful Registered", "user", "register", json.makejson(new String[]{"token"}, new String[]{this.getToken()}).toString()}), "NULL").toString());
+                } else {
+                    new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func", "parammeter"}, new String[]{"405", "Username Repeated", "user", "register", json.makejson(new String[]{"token"}, new String[]{this.getToken()}).toString()}), this.getToken()).toString());
+                }
+                break;
+            case "tokenlogin":
+                if (this.loginwithtoken(doc.getJSONObject("parameter").getString("username"), doc.getJSONObject("parameter").getString("password"))) {
+                    new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func", "parammeter"}, new String[]{"200", "Successful Logged", "user", "login", json.makejson(new String[]{"token"}, new String[]{this.getToken()}).toString()}), "NULL").toString());
+                } else {
+                    Element r = DocumentHelper.createElement("parameter");
+                    r.addElement("token").setText(this.getToken());
+                    new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func", "parammeter"}, new String[]{"405", "Username or Token Error", "user", "login", json.makejson(new String[]{"token"}, new String[]{this.getToken()}).toString()}), this.getToken()).toString());
+                }
+                break;
+            default:
+                new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func", "parammeter"}, new String[]{"404", "Function Not Find", "user", doc.getString("func"), json.makejson(new String[]{"token"}, new String[]{this.getToken()}).toString()}), this.getToken()).toString());
+                break;
         }
     }
 
     private boolean login(String username, String password) {
         if (islogin) return false;
-        File t = new File("data/users/" + username + ".xml");
+        File t = new File("data/users/" + username + ".dataprocess");
         if (!t.exists())
             return false;
-        Document document = dom4j.load("data/users/" + username + ".xml");
+        Document document = dom4j.load("data/users/" + username + ".dataprocess");
         Element rootElm = document.getRootElement();
         String isonlne = rootElm.element("isonline").getText();
         if (isonlne.equals("true"))
@@ -72,7 +69,7 @@ public class user {
         token = md5.md5_encode("PokePasswordMd5EncodeSalt" + password + "PokePasswordMd5EncodeSalt" + password + username + "UserTokenSalt");
         Element tokenElement = rootElm.element("token");
         tokenElement.setText(md5.md5_encode("PokePasswordMd5EncodeSalt" + password + "PokePasswordMd5EncodeSalt" + password + username + "UserTokenSalt"));
-        dom4j.write(document, "data/users/" + username + ".xml");
+        dom4j.write(document, "data/users/" + username + ".dataprocess");
         this.username = username;
         islogin = true;
         return true;
@@ -80,7 +77,7 @@ public class user {
 
     private boolean register(String username, String password) {
         if (islogin) return false;
-        File xmlsaved = new File("data/users/" + username + ".xml");
+        File xmlsaved = new File("data/users/" + username + ".dataprocess");
         if (!xmlsaved.exists()) {
             Document document = DocumentHelper.createDocument();
             Element userrootElement = document.addElement("user");
@@ -93,7 +90,7 @@ public class user {
             Element tokenElement = userrootElement.addElement("token");
             tokenElement.setText(md5.md5_encode("PokePasswordMd5EncodeSalt" + password + "PokePasswordMd5EncodeSalt" + password + username + "UserTokenSalt"));
             token = md5.md5_encode("PokePasswordMd5EncodeSalt" + password + "PokePasswordMd5EncodeSalt" + password + username + "UserTokenSalt");
-            dom4j.write(document, "data/users/" + username + ".xml");
+            dom4j.write(document, "data/users/" + username + ".dataprocess");
             islogin = true;
             this.username = username;
             return true;
@@ -114,7 +111,7 @@ public class user {
         if (islogin) {
             return false;
         } else {
-            if (dom4j.load("data/users/" + username + ".xml").getRootElement().element("token").getText().equals(token)) {
+            if (dom4j.load("data/users/" + username + ".dataprocess").getRootElement().element("token").getText().equals(token)) {
                 this.username = username;
                 islogin = true;
                 this.token = token;
@@ -126,12 +123,12 @@ public class user {
     }
     public void logout() {
         if (islogin) {
-            Document rootdoc = dom4j.load("data/users/" + username + ".xml");
+            Document rootdoc = dom4j.load("data/users/" + username + ".dataprocess");
             Element isonlineele = rootdoc.getRootElement().element("isonline");
             isonlineele.setText("offline");
             Element tokenele = rootdoc.getRootElement().element("token");
             tokenele.setText("");
-            dom4j.write(rootdoc, "data/users/" + username + ".xml");
+            dom4j.write(rootdoc, "data/users/" + username + ".dataprocess");
             token = "";
             islogin = false;
         }

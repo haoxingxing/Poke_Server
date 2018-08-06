@@ -1,23 +1,16 @@
 package network;
 
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
+import dataprocess.json;
+import org.json.JSONException;
+import org.json.JSONObject;
 import process.aes;
 import process.log;
 import process.md5;
 import process.user;
-import xml.dom4j;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Objects;
-
-import static xml.dom4j.makeOF;
-import static xml.dom4j.xmltostring;
 
 public class server extends Thread {
     private Socket socket;
@@ -35,46 +28,40 @@ public class server extends Thread {
         while (socket.isConnected()) {
             try {
                 String r = new network(socket).recv();
-                Document re = new SAXReader().read(new ByteArrayInputStream(r.getBytes()));
-                if (re.getRootElement().element("md5").getText().equals(md5.md5_encode(re.getRootElement().element("data").getText() + re.getRootElement().element("token")))) {
-                    if (user.getToken().equals(re.getRootElement().element("token").getText())) {
-                        Document encryoted = DocumentHelper.parseText(Objects.requireNonNull(aes.decrypt(re.getRootElement().element("data").getText(), Objects.requireNonNull(md5.md5_encode(re.getRootElement().element("token").getText() + "MakeTokenEnc")))));
-                        if (encryoted.getRootElement().element("class").getText().equals("user")) {
-                            user.process(encryoted);
+                JSONObject re = new JSONObject(r);
+                if (re.getString("md5").equals(md5.md5_encode(re.getString("data") + re.getString("token")))) {
+                    if (user.getToken().equals(re.getString("token"))) {
+                        JSONObject encryoted = new JSONObject(Objects.requireNonNull(aes.decrypt(re.getString("data"), Objects.requireNonNull(md5.md5_encode(re.getString("token") + "MakeTokenEnc")))));
+                        switch (encryoted.getString("class")) {
+                            case "user": {
+                                user.process(encryoted);
+                                continue;
+                            }
+                            default:
+                                new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"404", "Class Not Find", "main", "server"}), user.getToken()).toString());
                         }
                     } else {
-                        Document doc = DocumentHelper.createDocument();
-                        Element root = doc.addElement("reply");
-                        root.addElement("status").setText("401");
-                        root.addElement("message").setText("Unauthorized");
-                        new network(socket).send(xmltostring(dom4j.retaesprocess(doc, user.getToken()), makeOF()));
+                        new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"401", "Unauthorized", "main", "server"}), user.getToken()).toString());
                     }
                 } else {
                     try {
-                        new network(socket).send(xmltostring(dom4j.retaesprocess(dom4j.retxmlmodel("600", "Lossing Packet", "NULL", "NULL", DocumentHelper.createElement("")), user.getToken()), makeOF()));
+                        new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"600", "Lossing Packet", "main", "server"}), user.getToken()).toString());
                     } catch (IOException e) {
                         break;
                     }
                 }
             } catch (IOException e2) {
                 e2.printStackTrace();
-                Document doc = DocumentHelper.createDocument();
-                Element root = doc.addElement("reply");
-                root.addElement("status").setText("500");
-                root.addElement("message").setText("Server Error");
+                e2.printStackTrace();
                 try {
-                    new network(socket).send(xmltostring(dom4j.retaesprocess(doc, user.getToken()), makeOF()));
+                    new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"500", "Server IO Error", "main", "server"}), user.getToken()).toString());
                 } catch (IOException e) {
                     break;
                 }
-            } catch (IllegalArgumentException | DocumentException | NullPointerException e3) {
+            } catch (IllegalArgumentException | JSONException | NullPointerException e3) {
                 e3.printStackTrace();
-                Document doc = DocumentHelper.createDocument();
-                Element root = doc.addElement("reply");
-                root.addElement("status").setText("400");
-                root.addElement("message").setText("Bad Request");
                 try {
-                    new network(socket).send(xmltostring(dom4j.retaesprocess(doc, user.getToken()), makeOF()));
+                    new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"400", "Bad Request", "main", "server"}), user.getToken()).toString());
                 } catch (IOException e) {
                     break;
                 }

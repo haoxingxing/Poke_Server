@@ -27,6 +27,7 @@ public class network {
     }
 
     public String recv() throws IOException {
-        return base64.decode(recv.readLine());
+        String y = recv.readLine();
+        return base64.decode(y);
     }
 }
