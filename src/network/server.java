@@ -4,13 +4,14 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
 import process.aes;
 import process.log;
 import process.md5;
 import process.user;
 import xml.dom4j;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Objects;
@@ -34,7 +35,7 @@ public class server extends Thread {
         while (socket.isConnected()) {
             try {
                 String r = new network(socket).recv();
-                Document re = DocumentHelper.parseText(r);
+                Document re = new SAXReader().read(new ByteArrayInputStream(r.getBytes()));
                 if (re.getRootElement().element("md5").getText().equals(md5.md5_encode(re.getRootElement().element("data").getText() + re.getRootElement().element("token")))) {
                     if (user.getToken().equals(re.getRootElement().element("token").getText())) {
                         Document encryoted = DocumentHelper.parseText(Objects.requireNonNull(aes.decrypt(re.getRootElement().element("data").getText(), Objects.requireNonNull(md5.md5_encode(re.getRootElement().element("token").getText() + "MakeTokenEnc")))));
@@ -46,11 +47,7 @@ public class server extends Thread {
                         Element root = doc.addElement("reply");
                         root.addElement("status").setText("401");
                         root.addElement("message").setText("Unauthorized");
-                        OutputFormat outputFormat = OutputFormat.createPrettyPrint();
-                        outputFormat.setEncoding("UTF-8");
-                        outputFormat.setIndent(false); //设置是否缩进
-                        outputFormat.setNewlines(true); //设置是否换行
-                        new network(socket).send(xmltostring(dom4j.retaesprocess(doc, user.getToken()), outputFormat));
+                        new network(socket).send(xmltostring(dom4j.retaesprocess(doc, user.getToken()), makeOF()));
                     }
                 } else {
                     try {
@@ -65,27 +62,19 @@ public class server extends Thread {
                 Element root = doc.addElement("reply");
                 root.addElement("status").setText("500");
                 root.addElement("message").setText("Server Error");
-                OutputFormat outputFormat = OutputFormat.createPrettyPrint();
-                outputFormat.setEncoding("UTF-8");
-                outputFormat.setIndent(false); //设置是否缩进
-                outputFormat.setNewlines(true); //设置是否换行
                 try {
-                    new network(socket).send(xmltostring(dom4j.retaesprocess(doc, user.getToken()), outputFormat));
+                    new network(socket).send(xmltostring(dom4j.retaesprocess(doc, user.getToken()), makeOF()));
                 } catch (IOException e) {
                     break;
                 }
             } catch (IllegalArgumentException | DocumentException | NullPointerException e3) {
+                e3.printStackTrace();
                 Document doc = DocumentHelper.createDocument();
                 Element root = doc.addElement("reply");
                 root.addElement("status").setText("400");
                 root.addElement("message").setText("Bad Request");
-                // 设置XML文档格式
-                OutputFormat outputFormat = OutputFormat.createPrettyPrint();
-                outputFormat.setEncoding("UTF-8");
-                outputFormat.setIndent(false); //设置是否缩进
-                outputFormat.setNewlines(true); //设置是否换行
                 try {
-                    new network(socket).send(xmltostring(dom4j.retaesprocess(doc, user.getToken()), outputFormat));
+                    new network(socket).send(xmltostring(dom4j.retaesprocess(doc, user.getToken()), makeOF()));
                 } catch (IOException e) {
                     break;
                 }
