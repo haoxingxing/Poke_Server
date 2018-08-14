@@ -20,7 +20,6 @@ public class dom4j {
             SAXReader saxReader = new SAXReader();
             document = saxReader.read(new File(filename));  //读取XML文件,获得document对象
         } catch (Exception ex) {
-            ex.printStackTrace();
             return null;
         }
         return document;

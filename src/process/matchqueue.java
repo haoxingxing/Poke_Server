@@ -5,6 +5,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 
+import java.io.File;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,15 +20,16 @@ public class matchqueue {
         this.queuename = queuename;
         this.queueineed = queueinneed;
     }
-
     private String getCONFIGfile() {
-        return "data/queues/" + queuename + "." + queueineed + ".config.xml";
+        File md = new File("data/queues/" + queuename + "/" + queueineed);
+        md.mkdirs();
+        return "data/queues/" + queuename + "/" + queueineed + "/config.xml";
     }
-
     private String getQUEUEfile(int queueid) {
-        return "data/queues/" + queuename + "." + queueineed + "." + queueid + ".queue.xml";
+        File md = new File("data/queues/" + queuename + "/" + queueineed);
+        md.mkdirs();
+        return "data/queues/" + queuename + "/" + queueineed + "/" + queueid + ".queue.xml";
     }
-
     private void createqueue() {
         Document config = dom4j.load(getCONFIGfile());
         AtomicInteger nowqueuecreated = new AtomicInteger();
