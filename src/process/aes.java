@@ -8,7 +8,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 public class aes {
-    static final String mode = "AES/ECB/PKCS5Padding";
+    private static final String mode = "AES/ECB/PKCS5Padding";
     /**
      * AES加密字符串
      *
@@ -21,7 +21,7 @@ public class aes {
             KeyGenerator kgen = KeyGenerator.getInstance("AES");
             SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
             random.setSeed(password.getBytes());
-            kgen.init(256, random);
+            kgen.init(128, random);
             SecretKey secretKey = kgen.generateKey();
             byte[] enCodeFormat = secretKey.getEncoded();
             SecretKeySpec key = new SecretKeySpec(enCodeFormat, "AES");
@@ -49,7 +49,7 @@ public class aes {
             KeyGenerator kgen = KeyGenerator.getInstance("AES");
             SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
             random.setSeed(password.getBytes());
-            kgen.init(256, random);
+            kgen.init(128, random);
             SecretKey secretKey = kgen.generateKey();// 根据用户密码，生成一个密钥
             byte[] enCodeFormat = secretKey.getEncoded();// 返回基本编码格式的密钥
             SecretKeySpec key = new SecretKeySpec(enCodeFormat, "AES");// 转换为AES专用密钥
@@ -78,7 +78,7 @@ public class aes {
         return sb.toString();
     }
 
-    public static byte[] parseHexStr2Byte(String hexStr) {
+    private static byte[] parseHexStr2Byte(String hexStr) {
         if (hexStr.length() < 1)
             return null;
         byte[] result = new byte[hexStr.length() / 2];

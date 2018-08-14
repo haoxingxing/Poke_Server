@@ -11,9 +11,10 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Objects;
 
 public class user {
-    private String username;
+    String username;
     private boolean islogin = false;
     private String token;
     private Socket socket;
@@ -55,12 +56,12 @@ public class user {
 
     private boolean login(String username, String password) {
         if (islogin) return false;
-        File t = new File("data/users/" + username + ".dataprocess");
+        File t = new File("data/users/" + username + ".xml");
         if (!t.exists())
             return false;
-        Document document = dom4j.load("data/users/" + username + ".dataprocess");
-        Element rootElm = document.getRootElement();
-        String isonlne = rootElm.element("isonline").getText();
+        Document document = dom4j.load("data/users/" + username + ".xml");
+        Element rootElm = Objects.requireNonNull(document).getRootElement();
+        String isonlne = Objects.requireNonNull(rootElm).element("isonline").getText();
         if (isonlne.equals("true"))
             return false;
         String text = rootElm.element("password").getText();
@@ -69,7 +70,7 @@ public class user {
         token = md5.md5_encode("PokePasswordMd5EncodeSalt" + password + "PokePasswordMd5EncodeSalt" + password + username + "UserTokenSalt");
         Element tokenElement = rootElm.element("token");
         tokenElement.setText(md5.md5_encode("PokePasswordMd5EncodeSalt" + password + "PokePasswordMd5EncodeSalt" + password + username + "UserTokenSalt"));
-        dom4j.write(document, "data/users/" + username + ".dataprocess");
+        dom4j.write(document, "data/users/" + username + ".xml");
         this.username = username;
         islogin = true;
         return true;
@@ -77,7 +78,7 @@ public class user {
 
     private boolean register(String username, String password) {
         if (islogin) return false;
-        File xmlsaved = new File("data/users/" + username + ".dataprocess");
+        File xmlsaved = new File("data/users/" + username + ".xml");
         if (!xmlsaved.exists()) {
             Document document = DocumentHelper.createDocument();
             Element userrootElement = document.addElement("user");
@@ -90,7 +91,7 @@ public class user {
             Element tokenElement = userrootElement.addElement("token");
             tokenElement.setText(md5.md5_encode("PokePasswordMd5EncodeSalt" + password + "PokePasswordMd5EncodeSalt" + password + username + "UserTokenSalt"));
             token = md5.md5_encode("PokePasswordMd5EncodeSalt" + password + "PokePasswordMd5EncodeSalt" + password + username + "UserTokenSalt");
-            dom4j.write(document, "data/users/" + username + ".dataprocess");
+            dom4j.write(document, "data/users/" + username + ".xml");
             islogin = true;
             this.username = username;
             return true;
@@ -111,7 +112,7 @@ public class user {
         if (islogin) {
             return false;
         } else {
-            if (dom4j.load("data/users/" + username + ".dataprocess").getRootElement().element("token").getText().equals(token)) {
+            if (Objects.requireNonNull(dom4j.load("data/users/" + username + ".xml")).getRootElement().element("token").getText().equals(token)) {
                 this.username = username;
                 islogin = true;
                 this.token = token;
@@ -123,12 +124,12 @@ public class user {
     }
     public void logout() {
         if (islogin) {
-            Document rootdoc = dom4j.load("data/users/" + username + ".dataprocess");
-            Element isonlineele = rootdoc.getRootElement().element("isonline");
+            Document rootdoc = dom4j.load("data/users/" + username + ".xml");
+            Element isonlineele = Objects.requireNonNull(rootdoc).getRootElement().element("isonline");
             isonlineele.setText("offline");
             Element tokenele = rootdoc.getRootElement().element("token");
             tokenele.setText("");
-            dom4j.write(rootdoc, "data/users/" + username + ".dataprocess");
+            dom4j.write(rootdoc, "data/users/" + username + ".xml");
             token = "";
             islogin = false;
         }

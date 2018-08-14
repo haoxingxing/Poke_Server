@@ -2,10 +2,8 @@ package dataprocess;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import process.aes;
+import process.base64;
 import process.md5;
-
-import java.util.Objects;
 
 public class json {
     public static JSONObject makejson(String[] name, String[] value) {
@@ -20,7 +18,8 @@ public class json {
     }
 
     public static JSONObject jsonaesencrypet(JSONObject json, String Token) {
-        String encrypet = aes.encrypt(json.toString(), Objects.requireNonNull(md5.md5_encode(Token + "MakeTokenEnc")));
+        //String encrypet = aes.encrypt(json.toString(), Objects.requireNonNull(md5.md5_encode(Token + "MakeTokenEnc")));
+        String encrypet = base64.encode(json.toString());
         return makejson(new String[]{"token", "data", "md5"}, new String[]{Token, encrypet, md5.md5_encode(encrypet + Token)});
     }
 }

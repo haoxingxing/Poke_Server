@@ -15,12 +15,13 @@ import java.util.Objects;
 
 public class dom4j {
     public static Document load(String filename) {
-        Document document = null;
+        Document document;
         try {
             SAXReader saxReader = new SAXReader();
             document = saxReader.read(new File(filename));  //读取XML文件,获得document对象
         } catch (Exception ex) {
             ex.printStackTrace();
+            return null;
         }
         return document;
     }
@@ -35,7 +36,7 @@ public class dom4j {
         }
     }
 
-    public static String xmltostring(Document doc, OutputFormat outputFormat) {
+    private static String xmltostring(Document doc, OutputFormat outputFormat) {
         try {
             StringWriter s = new StringWriter();
             XMLWriter xmlWriter = new XMLWriter(s, outputFormat);
@@ -58,7 +59,7 @@ public class dom4j {
         return doc;
     }
 
-    public static OutputFormat makeOF() {
+    private static OutputFormat makeOF() {
         OutputFormat outputFormat = OutputFormat.createPrettyPrint();
         outputFormat.setEncoding("UTF-8");
         outputFormat.setIndent(false); //设置是否缩进
