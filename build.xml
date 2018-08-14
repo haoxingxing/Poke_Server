@@ -18,6 +18,7 @@
   <target name="jar" depends="compile">
     <!-- jar文件的输出路径 -->
     <jar destfile="${output.dir}/${jarname}" basedir="${classes.dir}">
+        <zipgroupfileset dir="${src.dir}" includes="*.jar"/>
       <manifest>
         <attribute name="Main-Class" value="launch"/>
       </manifest>
