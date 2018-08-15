@@ -14,6 +14,7 @@ public class matchqueue {
     private boolean isqueuing = false;
     private String queuename;
     private int queueineed;
+    private int queueid;
 
     public matchqueue(user u, String queuename, int queueinneed) {
         this.u = u;
@@ -95,6 +96,7 @@ public class matchqueue {
                             if (queue.getRootElement().element("number-" + x).getText().equals("")) {
                                 queue.getRootElement().element("number-" + x).setText(u.username);
                                 isqueuing = true;
+                                queueid = now;
                                 if (x == this.queueineed) {
                                     queue.getRootElement().element("isfull").setText("yes");
                                 }
@@ -117,5 +119,13 @@ public class matchqueue {
                 this.createqueue();
             }
         }
+    }
+
+    public boolean isfull() {
+        if (isqueuing) {
+            Document queue = dom4j.load(getQUEUEfile(queueid));
+            return Objects.requireNonNull(queue).getRootElement().element("isfull").getText().equals("yes");
+        }
+        return false;
     }
 }

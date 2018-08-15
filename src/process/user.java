@@ -15,14 +15,12 @@ import java.util.Objects;
 
 public class user {
     String username;
-    private boolean islogin = false;
+    public boolean islogin = false;
     private String token;
     private Socket socket;
-
     public user(Socket socket) {
         this.socket = socket;
     }
-
     public void process(JSONObject doc) throws IOException {
         switch (doc.getString("func")) {
             case "login":
@@ -54,6 +52,13 @@ public class user {
         }
     }
 
+    static public Long getThreadID(String username) {
+        Document rootdoc = dom4j.load("data/users/" + username + ".xml");
+        if (rootdoc.getRootElement().element("isonline").getText() == "online")
+            return Long.parseLong(Objects.requireNonNull(rootdoc).getRootElement().element("tid").getText());
+        return 0L;
+    }
+
     private boolean login(String username, String password) {
         if (islogin) return false;
         File t = new File("data/users/" + username + ".xml");
@@ -62,8 +67,9 @@ public class user {
         Document document = dom4j.load("data/users/" + username + ".xml");
         Element rootElm = Objects.requireNonNull(document).getRootElement();
         String isonlne = Objects.requireNonNull(rootElm).element("isonline").getText();
-        if (isonlne.equals("true"))
+        if (isonlne.equals("offline"))
             return false;
+        Objects.requireNonNull(rootElm).element("isonline").setText("online");
         String text = rootElm.element("password").getText();
         if (!text.equals(md5.md5_encode("PokePasswordMd5EncodeSalt" + password + "PokePasswordMd5EncodeSalt" + password)))
             return false;
@@ -73,7 +79,16 @@ public class user {
         dom4j.write(document, "data/users/" + username + ".xml");
         this.username = username;
         islogin = true;
+        writeThreadID();
         return true;
+    }
+
+    public String getToken() {
+        if (islogin) {
+            return token;
+        } else {
+            return "NULL";
+        }
     }
 
     private boolean register(String username, String password) {
@@ -87,24 +102,30 @@ public class user {
             Element userpwdElement = userrootElement.addElement("password");
             userpwdElement.setText(md5.md5_encode("PokePasswordMd5EncodeSalt" + password + "PokePasswordMd5EncodeSalt" + password));
             Element onlineElement = userrootElement.addElement("isonline");
-            onlineElement.setText("true");
+            onlineElement.setText("online");
             Element tokenElement = userrootElement.addElement("token");
             tokenElement.setText(md5.md5_encode("PokePasswordMd5EncodeSalt" + password + "PokePasswordMd5EncodeSalt" + password + username + "UserTokenSalt"));
             token = md5.md5_encode("PokePasswordMd5EncodeSalt" + password + "PokePasswordMd5EncodeSalt" + password + username + "UserTokenSalt");
             dom4j.write(document, "data/users/" + username + ".xml");
             islogin = true;
             this.username = username;
+            writeThreadID();
             return true;
         } else {
             return false;
         }
     }
 
-    public String getToken() {
+    public void logout() {
         if (islogin) {
-            return token;
-        } else {
-            return "NULL";
+            Document rootdoc = dom4j.load("data/users/" + username + ".xml");
+            Element isonlineele = Objects.requireNonNull(rootdoc).getRootElement().element("isonline");
+            isonlineele.setText("offline");
+            Element tokenele = rootdoc.getRootElement().element("token");
+            tokenele.setText("");
+            dom4j.write(rootdoc, "data/users/" + username + ".xml");
+            token = "";
+            islogin = false;
         }
     }
 
@@ -116,22 +137,19 @@ public class user {
                 this.username = username;
                 islogin = true;
                 this.token = token;
+                writeThreadID();
                 return true;
             } else {
                 return false;
             }
         }
     }
-    public void logout() {
+
+    private void writeThreadID() {
         if (islogin) {
             Document rootdoc = dom4j.load("data/users/" + username + ".xml");
-            Element isonlineele = Objects.requireNonNull(rootdoc).getRootElement().element("isonline");
-            isonlineele.setText("offline");
-            Element tokenele = rootdoc.getRootElement().element("token");
-            tokenele.setText("");
+            Objects.requireNonNull(rootdoc).addElement("tid").setText(Thread.currentThread().getId() + "");
             dom4j.write(rootdoc, "data/users/" + username + ".xml");
-            token = "";
-            islogin = false;
         }
     }
 }

@@ -6,12 +6,10 @@ import java.io.*;
 import java.net.Socket;
 
 public class network {
-    private Socket socket;
     private BufferedWriter send;
     private BufferedReader recv;
 
     public network(Socket socket) {
-        this.socket = socket;
         try {
             recv = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             send = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));

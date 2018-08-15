@@ -9,24 +9,37 @@ import process.md5;
 import process.user;
 
 import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.Objects;
 
 public class server extends Thread {
     private Socket socket;
     private Thread t;
     private String threadName;
+    private HashMap<Long, Thread> threadmap;
+    private HashMap<Integer, Socket> socketsmap;
+    private HashMap<Long, PipedInputStream> pipein;
+    private HashMap<Long, PipedOutputStream> pipeout;
 
-    public server(String name, Socket socketaccept) {
+    public server(String name, Socket socketaccept, HashMap<Long, Thread> threadmap, HashMap<Integer, Socket> socketsmap, HashMap<Long, PipedInputStream> pipedInputStreamHashMap, HashMap<Long, PipedOutputStream> pipedOutputStreamHashMap) {
         threadName = name;
         socket = socketaccept;
+        this.socketsmap = socketsmap;
+        this.threadmap = threadmap;
+        this.pipein = pipedInputStreamHashMap;
+        this.pipeout = pipedOutputStreamHashMap;
         log.printf("ACCEPT CONNECTION:[" + socket.getRemoteSocketAddress().toString() + "]");
     }
 
     public void run() {
+        threadmap.put(Thread.currentThread().getId(), Thread.currentThread());
         user user = new user(socket);
         while (socket.isConnected()) {
             try {
+
                 String r = new network(socket).recv();
                 JSONObject re = new JSONObject(r);
                 if (re.getString("md5").equals(md5.md5_encode(re.getString("data") + re.getString("token")))) {
@@ -76,8 +89,6 @@ public class server extends Thread {
         log.printf("CLOSED CONNECTION:[" + socket.getRemoteSocketAddress().toString() + "]");
         this.interrupt();
     }
-
-
     public void start() {
         if (t == null) {
             t = new Thread(this, threadName);

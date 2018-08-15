@@ -168,7 +168,8 @@
   <component name="libraryTable">
     <library name="json">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/src/json.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/dom4j.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/json.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
