@@ -3,14 +3,9 @@ package network;
 import dataprocess.json;
 import org.json.JSONException;
 import org.json.JSONObject;
-import process.aes;
-import process.log;
-import process.md5;
-import process.user;
+import process.*;
 
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Objects;
@@ -20,22 +15,21 @@ public class server extends Thread {
     private Thread t;
     private String threadName;
     private HashMap<Long, Thread> threadmap;
-    private HashMap<Integer, Socket> socketsmap;
-    private HashMap<Long, PipedInputStream> pipein;
-    private HashMap<Long, PipedOutputStream> pipeout;
+    private HashMap<Long, Socket> socketsmap;
+    private HashMap<String, mode> modemap;
 
-    public server(String name, Socket socketaccept, HashMap<Long, Thread> threadmap, HashMap<Integer, Socket> socketsmap, HashMap<Long, PipedInputStream> pipedInputStreamHashMap, HashMap<Long, PipedOutputStream> pipedOutputStreamHashMap) {
+    public server(String name, Socket socketaccept, HashMap<Long, Thread> threadmap, HashMap<Long, Socket> socketsmap, HashMap<String, mode> modemap) {
         threadName = name;
         socket = socketaccept;
         this.socketsmap = socketsmap;
         this.threadmap = threadmap;
-        this.pipein = pipedInputStreamHashMap;
-        this.pipeout = pipedOutputStreamHashMap;
+        this.modemap = modemap;
         log.printf("ACCEPT CONNECTION:[" + socket.getRemoteSocketAddress().toString() + "]");
     }
 
     public void run() {
         threadmap.put(Thread.currentThread().getId(), Thread.currentThread());
+        socketsmap.put(Thread.currentThread().getId(), socket);
         user user = new user(socket);
         while (socket.isConnected()) {
             try {
@@ -48,6 +42,10 @@ public class server extends Thread {
                         switch (encryoted.getString("class")) {
                             case "user": {
                                 user.process(encryoted);
+                                continue;
+                            }
+                            case "tcpserverforward": {
+                                new tcpserverforward(user, modemap, socketsmap).connect(encryoted.getString("object"));
                                 continue;
                             }
                             default:
@@ -86,6 +84,8 @@ public class server extends Thread {
             e.printStackTrace();
         }
         user.logout();
+        threadmap.remove(Thread.currentThread().getId());
+        socketsmap.remove(Thread.currentThread().getId());
         log.printf("CLOSED CONNECTION:[" + socket.getRemoteSocketAddress().toString() + "]");
         this.interrupt();
     }

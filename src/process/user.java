@@ -15,9 +15,9 @@ import java.util.Objects;
 
 public class user {
     String username;
-    public boolean islogin = false;
-    private String token;
     private Socket socket;
+    private String token;
+    private boolean islogin = false;
     public user(Socket socket) {
         this.socket = socket;
     }
@@ -52,13 +52,14 @@ public class user {
         }
     }
 
+    /*
     static public Long getThreadID(String username) {
         Document rootdoc = dom4j.load("data/users/" + username + ".xml");
         if (rootdoc.getRootElement().element("isonline").getText() == "online")
             return Long.parseLong(Objects.requireNonNull(rootdoc).getRootElement().element("tid").getText());
         return 0L;
     }
-
+    */
     private boolean login(String username, String password) {
         if (islogin) return false;
         File t = new File("data/users/" + username + ".xml");
@@ -79,7 +80,7 @@ public class user {
         dom4j.write(document, "data/users/" + username + ".xml");
         this.username = username;
         islogin = true;
-        writeThreadID();
+        //writeThreadID();
         return true;
     }
 
@@ -109,7 +110,7 @@ public class user {
             dom4j.write(document, "data/users/" + username + ".xml");
             islogin = true;
             this.username = username;
-            writeThreadID();
+            //writeThreadID();
             return true;
         } else {
             return false;
@@ -137,14 +138,14 @@ public class user {
                 this.username = username;
                 islogin = true;
                 this.token = token;
-                writeThreadID();
+                //writeThreadID();
                 return true;
             } else {
                 return false;
             }
         }
     }
-
+    /*
     private void writeThreadID() {
         if (islogin) {
             Document rootdoc = dom4j.load("data/users/" + username + ".xml");
@@ -152,4 +153,5 @@ public class user {
             dom4j.write(rootdoc, "data/users/" + username + ".xml");
         }
     }
+    */
 }

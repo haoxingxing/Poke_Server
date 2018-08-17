@@ -1,10 +1,9 @@
 import network.server;
 import process.log;
+import process.mode;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
@@ -19,22 +18,25 @@ public class launch {
         queuesdir.mkdirs();
         //-----------------------</INIT>---------------------------
         HashMap<Long, Thread> threadmap = new HashMap<>();
-        HashMap<Integer, Socket> socketsmap = new HashMap<>();
-        HashMap<Long, PipedInputStream> pipeinmap = new HashMap<>();
-        HashMap<Long, PipedOutputStream> pipeoutmap = new HashMap<>();
+        HashMap<Long, Socket> socketsmap = new HashMap<>();
+        HashMap<String, mode> modemap = new HashMap<>();
         AtomicBoolean isquit = new AtomicBoolean(false);
-        while (!isquit.get()) try {
+        try {
             ServerSocket serverSocket = new ServerSocket(8864);
             log.printf("ServerPort:" + 8864);
-            serverSocket.setSoTimeout(0);
-            Socket stocs = serverSocket.accept();
-            if (stocs.isConnected()) {
-                server s = new server(stocs.getLocalPort() + "", stocs, threadmap, socketsmap, pipeinmap, pipeoutmap);
-                s.start();
+            while (!isquit.get()) try {
+                serverSocket.setSoTimeout(0);
+                Socket stocs = serverSocket.accept();
+                if (stocs.isConnected()) {
+                    server s = new server(stocs.getLocalPort() + "", stocs, threadmap, socketsmap, modemap);
+                    s.start();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                isquit.set(true);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            isquit.set(true);
+        } catch (IOException e1) {
+            e1.printStackTrace();
         }
     }
 }

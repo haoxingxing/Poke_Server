@@ -1,12 +1,5 @@
 package process;
 
-import javax.crypto.*;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-
 public class aes {
     private static final String mode = "AES/ECB/PKCS5Padding";
     /**
@@ -17,7 +10,8 @@ public class aes {
      * @return 密文
      */
     public static String encrypt(String content, String password) {
-        try {
+        return base64.encode(content);
+        /*try {
             KeyGenerator kgen = KeyGenerator.getInstance("AES");
             SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
             random.setSeed(password.getBytes());
@@ -34,6 +28,7 @@ public class aes {
             e.printStackTrace();
         }
         return null;
+        */
     }
 
     /**
@@ -44,6 +39,8 @@ public class aes {
      * @return 明文
      */
     public static String decrypt(String content16, String password) {
+        return base64.decode(content16);
+        /*
         try {
             byte[] content = parseHexStr2Byte(content16);
             KeyGenerator kgen = KeyGenerator.getInstance("AES");
@@ -64,6 +61,7 @@ public class aes {
             System.out.println("[AES]Error Password");
         }
         return null;
+        */
     }
 
     private static String parseByte2HexStr(byte buf[]) {
