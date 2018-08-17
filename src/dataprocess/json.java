@@ -22,4 +22,9 @@ public class json {
         String encrypet = base64.encode(json.toString());
         return makejson(new String[]{"token", "data", "md5"}, new String[]{Token, encrypet, md5.md5_encode(encrypet + Token)});
     }
+
+    public static JSONObject jsonaddjson(JSONObject json, String key, JSONObject value) {
+        json.put(key, value);
+        return json;
+    }
 }

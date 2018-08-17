@@ -25,25 +25,23 @@ public class user {
         switch (doc.getString("func")) {
             case "login":
                 if (this.login(doc.getJSONObject("parameter").getString("username"), doc.getJSONObject("parameter").getString("password"))) {
-                    new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func", "parammeter"}, new String[]{"200", "Successful Logged", "user", "login", json.makejson(new String[]{"token"}, new String[]{this.getToken()}).toString()}), "NULL").toString());
+                    new network(socket).send(json.jsonaesencrypet(json.jsonaddjson(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"200", "Successful Logged", "user", "login"}), "parameter", json.makejson(new String[]{"token"}, new String[]{this.getToken()})), "NULL").toString());
                 } else {
-                    new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func", "parammeter"}, new String[]{"405", "Username or Password Error", "user", "login", json.makejson(new String[]{"token"}, new String[]{this.getToken()}).toString()}), this.getToken()).toString());
+                    new network(socket).send(json.jsonaesencrypet(json.jsonaddjson(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"405", "Username or Password Error", "user", "login"}), "parameter", json.makejson(new String[]{"token"}, new String[]{this.getToken()})), this.getToken()).toString());
                 }
                 break;
             case "register":
                 if (this.register(doc.getJSONObject("parameter").getString("username"), doc.getJSONObject("parameter").getString("password"))) {
-                    new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func", "parammeter"}, new String[]{"200", "Successful Registered", "user", "register", json.makejson(new String[]{"token"}, new String[]{this.getToken()}).toString()}), "NULL").toString());
+                    new network(socket).send(json.jsonaesencrypet(json.jsonaddjson(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"200", "Successful Registered", "user", "register"}), "parameter", json.makejson(new String[]{"token"}, new String[]{this.getToken()})), "NULL").toString());
                 } else {
-                    new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func", "parammeter"}, new String[]{"405", "Username Repeated", "user", "register", json.makejson(new String[]{"token"}, new String[]{this.getToken()}).toString()}), this.getToken()).toString());
+                    new network(socket).send(json.jsonaesencrypet(json.jsonaddjson(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"405", "Username Repeated", "user", "register"}), "parameter", json.makejson(new String[]{"token"}, new String[]{this.getToken()})), this.getToken()).toString());
                 }
                 break;
             case "tokenlogin":
                 if (this.loginwithtoken(doc.getJSONObject("parameter").getString("username"), doc.getJSONObject("parameter").getString("password"))) {
-                    new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func", "parammeter"}, new String[]{"200", "Successful Logged", "user", "login", json.makejson(new String[]{"token"}, new String[]{this.getToken()}).toString()}), "NULL").toString());
+                    new network(socket).send(json.jsonaesencrypet(json.jsonaddjson(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"200", "Successful Logged", "user", "tokenlogin"}), "parameter", json.makejson(new String[]{"token"}, new String[]{this.getToken()})), "NULL").toString());
                 } else {
-                    Element r = DocumentHelper.createElement("parameter");
-                    r.addElement("token").setText(this.getToken());
-                    new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func", "parammeter"}, new String[]{"405", "Username or Token Error", "user", "login", json.makejson(new String[]{"token"}, new String[]{this.getToken()}).toString()}), this.getToken()).toString());
+                    new network(socket).send(json.jsonaesencrypet(json.jsonaddjson(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"405", "Username or Token Error", "user", "tokenlogin"}), "parameter", json.makejson(new String[]{"token"}, new String[]{this.getToken()})), this.getToken()).toString());
                 }
                 break;
             default:
