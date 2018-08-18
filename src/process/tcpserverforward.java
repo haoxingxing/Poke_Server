@@ -76,5 +76,10 @@ public class tcpserverforward {
                 break;
             }
         }
+        mode bc = new mode();
+        bc.tcpserverforwarding = false;
+        bc.tcpserverforwardingobject = null;
+        bc.tcpserverforwardthreadid = null;
+        modemap.put(u.username, bc);
     }
 }

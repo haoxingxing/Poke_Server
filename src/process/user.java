@@ -38,7 +38,7 @@ public class user {
                 }
                 break;
             case "tokenlogin":
-                if (this.loginwithtoken(doc.getJSONObject("parameter").getString("username"), doc.getJSONObject("parameter").getString("password"))) {
+                if (this.loginwithtoken(doc.getJSONObject("parameter").getString("username"), doc.getJSONObject("parameter").getString("token"))) {
                     new network(socket).send(json.jsonaesencrypet(json.jsonaddjson(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"200", "Successful Logged", "user", "tokenlogin"}), "parameter", json.makejson(new String[]{"token"}, new String[]{this.getToken()})), "NULL").toString());
                 } else {
                     new network(socket).send(json.jsonaesencrypet(json.jsonaddjson(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"405", "Username or Token Error", "user", "tokenlogin"}), "parameter", json.makejson(new String[]{"token"}, new String[]{this.getToken()})), this.getToken()).toString());
@@ -66,7 +66,7 @@ public class user {
         Document document = dom4j.load("data/users/" + username + ".xml");
         Element rootElm = Objects.requireNonNull(document).getRootElement();
         String isonlne = Objects.requireNonNull(rootElm).element("isonline").getText();
-        if (isonlne.equals("offline"))
+        if (!isonlne.equals("offline"))
             return false;
         Objects.requireNonNull(rootElm).element("isonline").setText("online");
         String text = rootElm.element("password").getText();

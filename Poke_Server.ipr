@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ArtifactManager">
-    <artifact type="jar" build-on-make="true" name="Poke_Server:jar">
+    <artifact build-on-make="true" name="Poke_Server:jar">
       <output-path>$PROJECT_DIR$/out/artifacts/Poke_Server_jar</output-path>
-      <root id="archive" name="Poke_Server.jar">
-        <element id="module-output" name="Poke_Server" />
-        <element id="extracted-dir" path="$PROJECT_DIR$/lib/dom4j.jar" path-in-jar="/" />
-        <element id="extracted-dir" path="$PROJECT_DIR$/lib/json.jar" path-in-jar="/" />
+      <root id="root">
+        <element id="archive" name="Poke_Server.jar">
+          <element id="module-output" name="Poke_Server" />
+        </element>
+        <element id="library" level="project" name="json" />
       </root>
     </artifact>
   </component>
