@@ -154,7 +154,8 @@ public class matchqueue {
             }
         }
     }
-    public boolean isfull() {
+
+    private boolean isfull() {
         if (isqueuing) {
             Document queue = dom4j.load(getQUEUEfile(queueid));
             return Objects.requireNonNull(queue).getRootElement().element("isfull").getText().equals("yes");
@@ -162,7 +163,7 @@ public class matchqueue {
         return false;
     }
 
-    public Document getQueueInfo() {
+    private Document getQueueInfo() {
         if (isqueuing) {
             return dom4j.load(getQUEUEfile(queueid));
         }
