@@ -48,6 +48,9 @@ public class server extends Thread {
                                 new tcpserverforward(user, modemap, socketsmap).connect(encryoted.getString("object"));
                                 continue;
                             }
+                            case "matchqueue":
+                                new matchqueue(user, encryoted.getJSONObject("parameter").getString("queuename"), Integer.parseInt(encryoted.getJSONObject("parameter").getString("queueall"))).process(encryoted);
+                                continue;
                             default:
                                 new network(socket).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"404", "Class Not Find", "main", "server"}), user.getToken()).toString());
                         }

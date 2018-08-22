@@ -1,11 +1,16 @@
 package process;
 
 import dataprocess.dom4j;
+import dataprocess.json;
+import network.network;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.json.JSONObject;
+import org.json.XML;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -20,6 +25,35 @@ public class matchqueue {
         this.u = u;
         this.queuename = queuename;
         this.queueineed = queueinneed;
+    }
+
+    public void process(JSONObject doc) {
+        if (doc.getString("func").equals("join")) {
+            this.join();
+            while (isqueuing) {
+                if (u.socket.isConnected()) {
+                    try {
+                        if (isfull()) break;
+                        new network(u.socket).send(json.jsonaesencrypet(json.jsonaddjson(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"102", "Waiting", "matchqueue", "wait"}), "parameter", XML.toJSONObject(dom4j.xmltostring(this.getQueueInfo(), dom4j.makeOF()))), u.getToken()).toString());
+                        Thread.sleep(2500);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        break;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    break;
+                }
+            }
+            if (u.socket.isConnected()) {
+                try {
+                    new network(u.socket).send(json.jsonaesencrypet(json.jsonaddjson(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"200", "Matched", "matchqueue", "matched"}), "parameter", XML.toJSONObject(dom4j.xmltostring(this.getQueueInfo(), dom4j.makeOF()))), u.getToken()).toString());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
     private String getCONFIGfile() {
         File md = new File("data/queues/" + queuename + "/" + queueineed);
@@ -66,7 +100,7 @@ public class matchqueue {
         dataprocess.dom4j.write(newqueue, getQUEUEfile(nowqueueid));
     }
 
-    public void join() {
+    private void join() {
         while (!isqueuing) {
             Document doc = dom4j.load(getCONFIGfile());
             if (doc != null) {
@@ -120,12 +154,18 @@ public class matchqueue {
             }
         }
     }
-
     public boolean isfull() {
         if (isqueuing) {
             Document queue = dom4j.load(getQUEUEfile(queueid));
             return Objects.requireNonNull(queue).getRootElement().element("isfull").getText().equals("yes");
         }
         return false;
+    }
+
+    public Document getQueueInfo() {
+        if (isqueuing) {
+            return dom4j.load(getQUEUEfile(queueid));
+        }
+        return null;
     }
 }

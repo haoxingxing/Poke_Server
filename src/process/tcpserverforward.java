@@ -63,6 +63,11 @@ public class tcpserverforward {
         }
         Socket a = socketsmap.get(Thread.currentThread().getId());
         Socket b = socketsmap.get(modemap.get(username).tcpserverforwardthreadid);
+        try {
+            new network(socketsmap.get(Thread.currentThread().getId())).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"200", "P2P CONNECTED", "tcpserverforward", "connect"}), u.getToken()).toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         while (true) {
             try {
                 new network(a).send(new network(b).recv());

@@ -15,7 +15,7 @@ import java.util.Objects;
 
 public class user {
     String username;
-    private Socket socket;
+    public Socket socket;
     private String token;
     private boolean islogin = false;
     public user(Socket socket) {

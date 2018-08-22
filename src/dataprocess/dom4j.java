@@ -35,7 +35,7 @@ public class dom4j {
         }
     }
 
-    private static String xmltostring(Document doc, OutputFormat outputFormat) {
+    public static String xmltostring(Document doc, OutputFormat outputFormat) {
         try {
             StringWriter s = new StringWriter();
             XMLWriter xmlWriter = new XMLWriter(s, outputFormat);
@@ -58,7 +58,7 @@ public class dom4j {
         return doc;
     }
 
-    private static OutputFormat makeOF() {
+    public static OutputFormat makeOF() {
         OutputFormat outputFormat = OutputFormat.createPrettyPrint();
         outputFormat.setEncoding("UTF-8");
         outputFormat.setIndent(false); //设置是否缩进
