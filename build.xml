@@ -17,7 +17,7 @@
     <!-- 第三方jar包的路径 -->
     <path id="lib-classpath">
         <fileset dir="${lib.dir}">
-            <include name="lib/*.jar"/>
+            <include name="*.jar"/>
         </fileset>
     </path>
     <!-- 1. 初始化工作，如创建目录等 -->
