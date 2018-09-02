@@ -33,7 +33,6 @@ public class server extends Thread {
         user user = new user(socket);
         while (socket.isConnected()) {
             try {
-
                 String r = new network(socket).recv();
                 JSONObject re = new JSONObject(r);
                 if (re.getString("md5").equals(md5.md5_encode(re.getString("data") + re.getString("token")))) {

@@ -1,9 +1,14 @@
 package network;
 
+import org.json.JSONObject;
+import process.aes;
 import process.base64;
+import process.md5;
+import process.user;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Objects;
 
 public class network {
     private BufferedWriter send;
@@ -27,5 +32,18 @@ public class network {
     public String recv() throws IOException {
         String y = recv.readLine();
         return base64.decode(y);
+    }
+    static public JSONObject decrypet(user u, String data)
+    {
+        JSONObject re = new JSONObject(data);
+        if (re.getString("md5").equals(md5.md5_encode(re.getString("data") + re.getString("token")))) {
+            if (u.getToken().equals(re.getString("token"))) {
+                return new JSONObject(Objects.requireNonNull(aes.decrypt(re.getString("data"), Objects.requireNonNull(md5.md5_encode(re.getString("token") + "MakeTokenEnc")))));
+            } else {
+                return new JSONObject();
+            }
+        } else {
+            return new JSONObject();
+        }
     }
 }

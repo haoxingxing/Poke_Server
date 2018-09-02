@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <project default="jar" name="PKS">
     <!-- 工程目录结构
     project
@@ -17,7 +17,7 @@
     <!-- 第三方jar包的路径 -->
     <path id="lib-classpath">
         <fileset dir="${lib.dir}">
-            <include name="**/*.jar"/>
+            <include name="lib/*.jar"/>
         </fileset>
     </path>
     <!-- 1. 初始化工作，如创建目录等 -->

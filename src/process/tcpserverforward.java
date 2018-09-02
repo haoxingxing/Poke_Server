@@ -2,6 +2,7 @@ package process;
 
 import dataprocess.json;
 import network.network;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -68,18 +69,27 @@ public class tcpserverforward {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        while (true) {
+        while (a.isConnected()&&b.isConnected()) {
             try {
-                new network(a).send(new network(b).recv());
+                String r=new network(b).recv();
+                if (aes.decrypt(new JSONObject(r).getString("data"),"NULL").equals("disconnect"))
+                {
+                    b.close();
+                    break;
+                }
+                else {
+                    new network(a).send(r);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
-                try {
-                    new network(socketsmap.get(Thread.currentThread().getId())).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"200", "Socket Closed", "tcpserverforward", "datatransloop"}), u.getToken()).toString());
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
+
                 break;
             }
+        }
+        try {
+            new network(socketsmap.get(Thread.currentThread().getId())).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"200", "Socket Closed", "tcpserverforward", "datatransloop"}), u.getToken()).toString());
+        } catch (IOException e1) {
+            e1.printStackTrace();
         }
         mode bc = new mode();
         bc.tcpserverforwarding = false;
