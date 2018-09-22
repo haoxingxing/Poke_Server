@@ -35,7 +35,7 @@ public class matchqueue {
                     try {
                         if (isfull()) break;
                         new network(u.socket).send(json.jsonaesencrypet(json.jsonaddjson(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"102", "Waiting", "matchqueue", "wait"}), "parameter", XML.toJSONObject(dom4j.xmltostring(this.getQueueInfo(), dom4j.makeOF()))), u.getToken()).toString());
-                        Thread.sleep(2500);
+                        Thread.sleep(500);
                     } catch (IOException e) {
                         e.printStackTrace();
                         break;
@@ -43,6 +43,7 @@ public class matchqueue {
                         e.printStackTrace();
                     }
                 } else {
+                    this.quit_queue();
                     break;
                 }
             }
@@ -66,22 +67,11 @@ public class matchqueue {
         return "data/queues/" + queuename + "/" + queueineed + "/" + queueid + ".queue.xml";
     }
     private void createqueue() {
-        Document config = dom4j.load(getCONFIGfile());
+        Document config = dom4j.lock(getCONFIGfile());
         AtomicInteger nowqueuecreated = new AtomicInteger();
         if (config != null) {
-            while (Objects.requireNonNull(config).getRootElement().element("lock").getText().equals("lock")) {
-                config = dom4j.load(getCONFIGfile());
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            config.getRootElement().element("lock").setText("lock");
-            dataprocess.dom4j.write(config, getCONFIGfile());
             config.getRootElement().element("itor").setText((Integer.parseInt(config.getRootElement().element("itor").getText()) + 1) + "");
             nowqueuecreated.set(Integer.parseInt(config.getRootElement().element("itor").getText()));
-            config.getRootElement().element("lock").setText("unlock");
         } else {
             config = DocumentHelper.createDocument();
             Element root = config.addElement("queuecfg");
@@ -89,54 +79,37 @@ public class matchqueue {
             root.addElement("lock").setText("unlock");
             nowqueuecreated.set(1);
         }
-        dataprocess.dom4j.write(config, getCONFIGfile());
+        dataprocess.dom4j.unlock(config, getCONFIGfile());
         int nowqueueid = nowqueuecreated.get();
         Document newqueue = DocumentHelper.createDocument();
         Element rootofqueue = newqueue.addElement("queue");
         for (AtomicInteger x = new AtomicInteger(1); x.get() <= this.queueineed; x.getAndIncrement())
-            rootofqueue.addElement("number-" + x.get()).setText("");
+            rootofqueue.addElement("number-" + x.get()).setText("empty");
         rootofqueue.addElement("isfull").setText("no");
-        rootofqueue.addElement("lock").setText("unlock");
-        dataprocess.dom4j.write(newqueue, getQUEUEfile(nowqueueid));
+        dataprocess.dom4j.unlock(newqueue, getQUEUEfile(nowqueueid));
+        log.printf("Created Queue ID:" + nowqueueid + " Name:" + queuename + " MemberNumber:" + queueineed, Thread.currentThread().getStackTrace()[1].getFileName(), Thread.currentThread().getStackTrace()[1].getLineNumber());
     }
 
     private void join() {
         while (!isqueuing) {
-            Document doc = dom4j.load(getCONFIGfile());
+            Document doc = dom4j.lock(getCONFIGfile());
             if (doc != null) {
-                while (Objects.requireNonNull(doc).getRootElement().element("lock").getText().equals("lock")) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    doc = dom4j.load(getCONFIGfile());
-                }
                 int now = Integer.parseInt(doc.getRootElement().element("itor").getText());
-                Document queue = dom4j.load(getQUEUEfile(now));
+                Document queue = dom4j.lock(getQUEUEfile(now));
                 if (queue != null) {
-                    while (Objects.requireNonNull(queue).getRootElement().element("lock").getText().equals("lock")) {
-                        queue = dataprocess.dom4j.load(getQUEUEfile(now));
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    queue.getRootElement().element("lock").setText("lock");
-                    dataprocess.dom4j.write(queue, getQUEUEfile(now));
                     if (queue.getRootElement().element("isfull").getText().equals("no")) {
                         for (int x = 1; x <= this.queueineed; x++) {
-                            if (queue.getRootElement().element("number-" + x).getText().equals("")) {
-                                queue.getRootElement().element("number-" + x).setText(u.username);
+                            if (queue.getRootElement().element("number-" + x).getText().equals("empty")) {
+                                queue.getRootElement().element("number-" + x).setText(Thread.currentThread().getId() + "");
                                 isqueuing = true;
                                 queueid = now;
-                                if (x == this.queueineed) {
-                                    queue.getRootElement().element("isfull").setText("yes");
-                                }
+                                log.printf("Joined Queue ID:" + now + " Name:" + queuename + " MemberNumber:" + queueineed, Thread.currentThread().getStackTrace()[1].getFileName(), Thread.currentThread().getStackTrace()[1].getLineNumber());
                                 break;
                             }
                         }
+                        for (int y = 1; y <= this.queueineed & !queue.getRootElement().element("number-" + y).getText().equals("empty"); y++)
+                            if (y == this.queueineed)
+                                queue.getRootElement().element("isfull").setText("yes");
                         if (!isqueuing) {
                             queue.getRootElement().element("isfull").setText("yes");
                             this.createqueue();
@@ -144,8 +117,7 @@ public class matchqueue {
                     } else {
                         this.createqueue();
                     }
-                    queue.getRootElement().element("lock").setText("unlock");
-                    dataprocess.dom4j.write(queue, getQUEUEfile(now));
+                    dataprocess.dom4j.unlock(queue, getQUEUEfile(now));
                 } else {
                     this.createqueue();
                 }
@@ -155,6 +127,28 @@ public class matchqueue {
         }
     }
 
+    private void quit_queue() {
+        if (isqueuing) {
+            if (isfull())
+                return;
+            Document queue = dom4j.lock(getQUEUEfile(queueid));
+            if (queue != null) {
+                for (int x = 1; x <= this.queueineed; x++) {
+                    if (queue.getRootElement().element("number-" + x).getText().equals(Thread.currentThread().getId() + "")) {
+                        queue.getRootElement().element("number-" + x).setText("empty");
+                        isqueuing = false;
+                        break;
+                    }
+                }
+                dom4j.unlock(queue, getQUEUEfile(queueid));
+                log.printf("Quit Queue ID:" + queueid + " Name:" + queuename + " MemberNumber:" + queueineed, Thread.currentThread().getStackTrace()[1].getFileName(), Thread.currentThread().getStackTrace()[1].getLineNumber());
+                queueid = 0;
+                return;
+            }
+            isqueuing = false;
+            queueid = 0;
+        }
+    }
     private boolean isfull() {
         if (isqueuing) {
             Document queue = dom4j.load(getQUEUEfile(queueid));
@@ -162,7 +156,6 @@ public class matchqueue {
         }
         return false;
     }
-
     private Document getQueueInfo() {
         if (isqueuing) {
             return dom4j.load(getQUEUEfile(queueid));

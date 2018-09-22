@@ -75,4 +75,28 @@ public class dom4j {
         root.addElement("md5").setText(md5.md5_encode(encrypet + token));
         return docret;
     }
+
+    public static Document lock(String file) {
+        Document f = dom4j.load(file);
+        if (f != null) {
+            while (Objects.requireNonNull(f).getRootElement().element("lock").getText().equals("lock")) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                f = dom4j.load(file);
+            }
+            f.getRootElement().element("lock").setText("lock");
+            dom4j.write(f, file);
+            return f;
+        }
+        return null;
+
+    }
+
+    public static void unlock(Document changed_doc, String file) {
+        changed_doc.getRootElement().element("lock").setText("unlock");
+        dom4j.write(changed_doc, file);
+    }
 }

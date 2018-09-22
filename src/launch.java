@@ -11,19 +11,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class launch {
     public static void main(String[] args) {
-        //------------------------<INIT>---------------------------
+        //------------------------  <INIT>  ---------------------------
         File userdir = new File("data/users");
         userdir.mkdirs();
         File queuesdir = new File("data/queues/");
         queuesdir.mkdirs();
-        //-----------------------</INIT>---------------------------
+        //-----------------------  </INIT>  ---------------------------
+        //-----------------------  <MAPS>   ----------------------------
         HashMap<Long, Thread> threadmap = new HashMap<>();
         HashMap<Long, Socket> socketsmap = new HashMap<>();
-        HashMap<String, mode> modemap = new HashMap<>();
+        HashMap<Long, mode> modemap = new HashMap<>();
+        //-----------------------  </MAPS>  -----------------------------
+
         AtomicBoolean isquit = new AtomicBoolean(false);
         try {
             ServerSocket serverSocket = new ServerSocket(8864);
-            log.printf("ServerPort:" + 8864);
+            log.printf("ServerPort:" + 8864, Thread.currentThread().getStackTrace()[1].getFileName(), Thread.currentThread().getStackTrace()[1].getLineNumber());
             while (!isquit.get()) try {
                 serverSocket.setSoTimeout(0);
                 Socket stocs = serverSocket.accept();
@@ -38,5 +41,6 @@ public class launch {
         } catch (IOException e1) {
             e1.printStackTrace();
         }
+        log.printf("Server Stopped", Thread.currentThread().getStackTrace()[1].getFileName(), Thread.currentThread().getStackTrace()[1].getLineNumber());
     }
 }

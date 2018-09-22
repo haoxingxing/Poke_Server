@@ -1,10 +1,7 @@
 package network;
 
 import org.json.JSONObject;
-import process.aes;
-import process.base64;
-import process.md5;
-import process.user;
+import process.*;
 
 import java.io.*;
 import java.net.Socket;
@@ -27,10 +24,12 @@ public class network {
         send.write(base64.encode(data));
         send.write("\r\n");
         send.flush();
+        log.printf("Send (" + data + ")", Thread.currentThread().getStackTrace()[1].getFileName(), Thread.currentThread().getStackTrace()[1].getLineNumber());
     }
 
     public String recv() throws IOException {
         String y = recv.readLine();
+        log.printf("Recv (" + y + ")", Thread.currentThread().getStackTrace()[1].getFileName(), Thread.currentThread().getStackTrace()[1].getLineNumber());
         return base64.decode(y);
     }
     static public JSONObject decrypet(user u, String data)

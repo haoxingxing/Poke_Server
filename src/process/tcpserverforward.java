@@ -11,23 +11,23 @@ import java.util.HashMap;
 public class tcpserverforward {
     //private HashMap<Long, Thread> threadssmap;
     private HashMap<Long, Socket> socketsmap;
-    private HashMap<String, mode> modemap;
+    private HashMap<Long, mode> modemap;
     private user u;
 
     //tcpserverforward(user u, HashMap<Long, Thread> threadsmap, HashMap<String, mode> modemap, HashMap<Long, Socket> socketsmap) {
-    public tcpserverforward(user u, HashMap<String, mode> modemap, HashMap<Long, Socket> socketsmap) {
+    public tcpserverforward(user u, HashMap<Long, mode> modemap, HashMap<Long, Socket> socketsmap) {
         this.modemap = modemap;
         this.socketsmap = socketsmap;
         this.u = u;
     }
 
-    public void connect(String username) {
+    public void connect(String tid) {
         mode m = new mode();
         m.tcpserverforwarding = true;
-        m.tcpserverforwardingobject = username;
+        m.tcpserverforwardingobject = tid;
         m.tcpserverforwardthreadid = Thread.currentThread().getId();
-        modemap.put(u.username, m);
-        while (!modemap.containsKey(username)) {
+        modemap.put(Thread.currentThread().getId(), m);
+        while (!modemap.containsKey(Long.getLong(tid))) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
@@ -41,7 +41,7 @@ public class tcpserverforward {
             }
         }
 
-        while (!modemap.get(username).tcpserverforwarding) {
+        while (!modemap.get(Long.getLong(tid)).tcpserverforwarding) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -54,7 +54,7 @@ public class tcpserverforward {
                 return;
             }
         }
-        if (!modemap.get(username).tcpserverforwardingobject.equals(u.username)) {
+        if (!modemap.get(Long.getLong(tid)).tcpserverforwardingobject.equals(u.username)) {
             try {
                 new network(socketsmap.get(Thread.currentThread().getId())).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"400", "The object doesn't request for you", "tcpserverforward", "connect"}), u.getToken()).toString());
             } catch (IOException e1) {
@@ -63,7 +63,7 @@ public class tcpserverforward {
             return;
         }
         Socket a = socketsmap.get(Thread.currentThread().getId());
-        Socket b = socketsmap.get(modemap.get(username).tcpserverforwardthreadid);
+        Socket b = socketsmap.get(Long.getLong(tid));
         try {
             new network(socketsmap.get(Thread.currentThread().getId())).send(json.jsonaesencrypet(json.makejson(new String[]{"status", "message", "class", "func"}, new String[]{"200", "P2P CONNECTED", "tcpserverforward", "connect"}), u.getToken()).toString());
         } catch (IOException e) {
@@ -95,6 +95,6 @@ public class tcpserverforward {
         bc.tcpserverforwarding = false;
         bc.tcpserverforwardingobject = null;
         bc.tcpserverforwardthreadid = null;
-        modemap.put(u.username, bc);
+        modemap.put(Long.getLong(tid), bc);
     }
 }

@@ -16,15 +16,15 @@ public class server extends Thread {
     private String threadName;
     private HashMap<Long, Thread> threadmap;
     private HashMap<Long, Socket> socketsmap;
-    private HashMap<String, mode> modemap;
+    private HashMap<Long, mode> modemap;
 
-    public server(String name, Socket socketaccept, HashMap<Long, Thread> threadmap, HashMap<Long, Socket> socketsmap, HashMap<String, mode> modemap) {
+    public server(String name, Socket socketaccept, HashMap<Long, Thread> threadmap, HashMap<Long, Socket> socketsmap, HashMap<Long, mode> modemap) {
         threadName = name;
         socket = socketaccept;
         this.socketsmap = socketsmap;
         this.threadmap = threadmap;
         this.modemap = modemap;
-        log.printf("ACCEPT CONNECTION:[" + socket.getRemoteSocketAddress().toString() + "]");
+        log.printf("ACCEPT CONNECTION:[" + socket.getRemoteSocketAddress().toString() + "]", Thread.currentThread().getStackTrace()[1].getFileName(), Thread.currentThread().getStackTrace()[1].getLineNumber());
     }
 
     public void run() {
@@ -88,7 +88,7 @@ public class server extends Thread {
         user.logout();
         threadmap.remove(Thread.currentThread().getId());
         socketsmap.remove(Thread.currentThread().getId());
-        log.printf("CLOSED CONNECTION:[" + socket.getRemoteSocketAddress().toString() + "]");
+        log.printf("CLOSED CONNECTION:[" + socket.getRemoteSocketAddress().toString() + "]", Thread.currentThread().getStackTrace()[1].getFileName(), Thread.currentThread().getStackTrace()[1].getLineNumber());
         this.interrupt();
     }
     public void start() {
